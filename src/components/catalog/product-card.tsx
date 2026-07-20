@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { QuickAddToCart } from "@/components/catalog/quick-add-to-cart";
 import { formatPaise } from "@/lib/money";
 
 type ProductCardVariant = {
@@ -25,8 +26,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const cheapest = [...product.variants].sort((a, b) => a.pricePaise - b.pricePaise)[0];
 
   return (
-    <Link href={`/product/${product.slug}`} className="group block">
-      <Card className="overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
+    <Card className="overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
+      <Link href={`/product/${product.slug}`} className="group block">
         <div className="relative aspect-square w-full bg-muted">
           {product.images[0] ? (
             <Image
@@ -50,7 +51,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             )}
           </div>
         </div>
-        <CardContent className="p-4">
+        <CardContent className="p-4 pb-0">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">
             Home-made
           </p>
@@ -69,7 +70,18 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </p>
           )}
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+
+      {cheapest && (
+        <CardContent className="p-4 pt-3">
+          <QuickAddToCart
+            productSlug={product.slug}
+            productName={product.name}
+            imageUrl={product.images[0]}
+            variant={cheapest}
+          />
+        </CardContent>
+      )}
+    </Card>
   );
 }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/layout/footer";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,8 +29,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -37,8 +40,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${bitter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
         <QueryProvider>
           {children}
+          {modal}
           <Footer />
           <Toaster />
         </QueryProvider>

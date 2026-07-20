@@ -178,7 +178,22 @@ export function CheckoutClient() {
       </div>
 
       <div>
-        <h2 className="font-heading text-lg font-semibold">Order summary</h2>
+        <h2 className="font-heading text-lg font-semibold">Payment method</h2>
+        <div className="mt-3 flex flex-col gap-2">
+          <label className="flex items-center gap-3 rounded-xl border border-primary bg-card p-4 text-sm">
+            <input type="radio" checked readOnly className="accent-primary" />
+            <span className="font-medium">Cash on Delivery</span>
+          </label>
+          <label className="flex items-center gap-3 rounded-xl border bg-muted/40 p-4 text-sm text-muted-foreground">
+            <input type="radio" disabled className="accent-muted-foreground" />
+            <span>UPI</span>
+            <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
+              Coming soon
+            </span>
+          </label>
+        </div>
+
+        <h2 className="mt-6 font-heading text-lg font-semibold">Order summary</h2>
         <div className="mt-3 flex flex-col gap-3 rounded-xl border bg-card p-4">
           {items.map((item) => (
             <div key={item.variantId} className="flex justify-between text-sm">

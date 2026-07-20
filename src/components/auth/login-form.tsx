@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleIcon } from "@/components/auth/google-icon";
 
 export function LoginForm() {
   const router = useRouter();
@@ -40,8 +41,10 @@ export function LoginForm() {
       <Button
         type="button"
         variant="outline"
+        className="gap-2"
         onClick={() => signIn("google", { callbackUrl: next })}
       >
+        <GoogleIcon className="size-4" />
         Continue with Google
       </Button>
 
