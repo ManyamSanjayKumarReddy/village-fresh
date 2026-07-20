@@ -6,6 +6,7 @@ export const mergeCartSchema = z.object({
       z.object({
         variantId: z.coerce.number().int().positive(),
         quantity: z.coerce.number().int().min(1).max(99),
+        extraSpicy: z.boolean().optional(),
       }),
     )
     .max(100),

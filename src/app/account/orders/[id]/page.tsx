@@ -83,6 +83,9 @@ export default async function OrderDetailPage({
                 <span>
                   {item.productNameSnapshot} ({item.variantLabelSnapshot}) &times;{" "}
                   {item.quantity}
+                  {item.extraSpicy && (
+                    <span className="ml-1 text-xs text-muted-foreground">🌶️ extra spicy</span>
+                  )}
                 </span>
                 <span>{formatPaise(item.lineTotalPaise)}</span>
               </div>

@@ -17,7 +17,7 @@ export async function getOrCreateCartId(userId: number): Promise<number> {
 
 export async function mergeCartItems(
   userId: number,
-  items: { variantId: number; quantity: number }[],
+  items: { variantId: number; quantity: number; extraSpicy?: boolean }[],
 ) {
   if (items.length === 0) return;
 
@@ -26,10 +26,18 @@ export async function mergeCartItems(
   for (const item of items) {
     await db
       .insert(cartItems)
-      .values({ cartId, variantId: item.variantId, quantity: item.quantity })
+      .values({
+        cartId,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        extraSpicy: item.extraSpicy ?? false,
+      })
       .onConflictDoUpdate({
         target: [cartItems.cartId, cartItems.variantId],
-        set: { quantity: sql`${cartItems.quantity} + ${item.quantity}` },
+        set: {
+          quantity: sql`${cartItems.quantity} + ${item.quantity}`,
+          extraSpicy: item.extraSpicy ?? false,
+        },
       });
   }
 }
@@ -52,6 +60,7 @@ export async function getCartDetails(userId: number) {
       pricePaise: productVariants.pricePaise,
       stockQty: productVariants.stockQty,
       quantity: cartItems.quantity,
+      extraSpicy: cartItems.extraSpicy,
       productId: products.id,
       productName: products.name,
       productSlug: products.slug,

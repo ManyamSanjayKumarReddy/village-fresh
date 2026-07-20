@@ -9,6 +9,7 @@ export type CartItem = {
   pricePaise: number;
   imageUrl?: string;
   quantity: number;
+  extraSpicy: boolean;
 };
 
 type CartState = {
@@ -16,6 +17,7 @@ type CartState = {
   addItem: (item: CartItem) => void;
   removeItem: (variantId: number) => void;
   setQuantity: (variantId: number, quantity: number) => void;
+  setExtraSpicy: (variantId: number, extraSpicy: boolean) => void;
   clear: () => void;
   totalPaise: () => number;
   totalQuantity: () => number;
@@ -32,7 +34,7 @@ export const useCartStore = create<CartState>()(
             return {
               items: state.items.map((i) =>
                 i.variantId === item.variantId
-                  ? { ...i, quantity: i.quantity + item.quantity }
+                  ? { ...i, quantity: i.quantity + item.quantity, extraSpicy: item.extraSpicy }
                   : i,
               ),
             };
@@ -51,6 +53,10 @@ export const useCartStore = create<CartState>()(
               : state.items.map((i) =>
                   i.variantId === variantId ? { ...i, quantity } : i,
                 ),
+        })),
+      setExtraSpicy: (variantId, extraSpicy) =>
+        set((state) => ({
+          items: state.items.map((i) => (i.variantId === variantId ? { ...i, extraSpicy } : i)),
         })),
       clear: () => set({ items: [] }),
       totalPaise: () =>

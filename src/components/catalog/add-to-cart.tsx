@@ -35,6 +35,7 @@ export function AddToCart({
   const [variantId, setVariantId] = useState<number | undefined>(
     inStockVariants[0]?.id,
   );
+  const [extraSpicy, setExtraSpicy] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
 
   const selected = variants.find((v) => v.id === variantId);
@@ -47,7 +48,7 @@ export function AddToCart({
     <div className="flex flex-col gap-3">
       <Select
         value={variantId ? String(variantId) : undefined}
-        onValueChange={(value) => setVariantId(Number(value))}
+        onValueChange={(value) => value && setVariantId(Number(value))}
       >
         <SelectTrigger className="w-48">
           <SelectValue placeholder="Choose a size" />
@@ -62,6 +63,15 @@ export function AddToCart({
         </SelectContent>
       </Select>
 
+      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={extraSpicy}
+          onChange={(e) => setExtraSpicy(e.target.checked)}
+        />
+        Make it extra spicy 🌶️
+      </label>
+
       <Button
         disabled={!selected}
         onClick={() => {
@@ -74,6 +84,7 @@ export function AddToCart({
             pricePaise: selected.pricePaise,
             imageUrl,
             quantity: 1,
+            extraSpicy,
           });
           toast.success(`Added ${productName} (${selected.label}) to cart`);
         }}

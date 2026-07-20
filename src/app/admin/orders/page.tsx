@@ -1,8 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderStatusUpdater } from "@/components/admin/order-status-updater";
 import { db } from "@/db";
-import { addresses, orders, users } from "@/db/schema";
+import { addresses, orderItems, orders, users } from "@/db/schema";
 import { formatPaise } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,17 @@ export default async function AdminOrdersPage() {
     .innerJoin(users, eq(orders.userId, users.id))
     .innerJoin(addresses, eq(orders.addressId, addresses.id))
     .orderBy(desc(orders.id));
+
+  const orderIds = rows.map((r) => r.order.id);
+  const items = orderIds.length
+    ? await db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds))
+    : [];
+  const itemsByOrder = new Map<number, typeof items>();
+  for (const item of items) {
+    const list = itemsByOrder.get(item.orderId) ?? [];
+    list.push(item);
+    itemsByOrder.set(item.orderId, list);
+  }
 
   return (
     <div>
@@ -48,6 +59,17 @@ export default async function AdminOrdersPage() {
                   <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
                 </div>
               </div>
+
+              <ul className="mt-3 flex flex-col gap-1 border-t pt-3 text-sm text-muted-foreground">
+                {(itemsByOrder.get(order.id) ?? []).map((item) => (
+                  <li key={item.id}>
+                    {item.productNameSnapshot} ({item.variantLabelSnapshot}) &times; {item.quantity}
+                    {item.extraSpicy && (
+                      <span className="ml-1 font-medium text-primary">🌶️ extra spicy</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

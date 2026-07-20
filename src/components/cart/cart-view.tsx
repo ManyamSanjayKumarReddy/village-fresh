@@ -9,7 +9,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useHydrated } from "@/store/use-hydrated";
 
 export function CartView() {
-  const { items, removeItem, setQuantity, totalPaise } = useCartStore();
+  const { items, removeItem, setQuantity, setExtraSpicy, totalPaise } = useCartStore();
   const hydrated = useHydrated();
 
   if (!hydrated) return null;
@@ -40,6 +40,14 @@ export function CartView() {
             </Link>
             <p className="text-sm text-muted-foreground">{item.variantLabel}</p>
             <p className="text-sm font-medium text-primary">{formatPaise(item.pricePaise)}</p>
+            <label className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={item.extraSpicy}
+                onChange={(e) => setExtraSpicy(item.variantId, e.target.checked)}
+              />
+              Extra spicy 🌶️
+            </label>
           </div>
           <div className="flex items-center gap-2">
             <Button

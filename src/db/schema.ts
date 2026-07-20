@@ -126,6 +126,7 @@ export const cartItems = pgTable("cart_items", {
   cartId: integer("cart_id").notNull().references(() => carts.id, { onDelete: "cascade" }),
   variantId: integer("variant_id").notNull().references(() => productVariants.id, { onDelete: "restrict" }),
   quantity: integer("quantity").notNull().default(1),
+  extraSpicy: boolean("extra_spicy").notNull().default(false),
 }, (table) => ({
   cartVariantIdx: uniqueIndex("cart_items_cart_variant_idx").on(table.cartId, table.variantId),
 }));
@@ -156,6 +157,7 @@ export const orderItems = pgTable("order_items", {
   unitPricePaiseSnapshot: integer("unit_price_paise_snapshot").notNull(),
   quantity: integer("quantity").notNull(),
   lineTotalPaise: integer("line_total_paise").notNull(),
+  extraSpicy: boolean("extra_spicy").notNull().default(false),
 });
 
 export const orderStatusHistory = pgTable("order_status_history", {

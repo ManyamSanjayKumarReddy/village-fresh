@@ -19,6 +19,7 @@ type CartItem = {
   pricePaise: number;
   stockQty: number;
   quantity: number;
+  extraSpicy: boolean;
   productName: string;
   productSlug: string;
 };
@@ -48,7 +49,9 @@ export function CheckoutClient() {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   const mergeMutation = useMutation({
-    mutationFn: async (items: { variantId: number; quantity: number }[]) => {
+    mutationFn: async (
+      items: { variantId: number; quantity: number; extraSpicy: boolean }[],
+    ) => {
       const res = await fetch("/api/v1/cart/merge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +72,11 @@ export function CheckoutClient() {
 
     if (guestItems.length > 0) {
       mergeMutation.mutate(
-        guestItems.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+        guestItems.map((i) => ({
+          variantId: i.variantId,
+          quantity: i.quantity,
+          extraSpicy: i.extraSpicy,
+        })),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,6 +206,9 @@ export function CheckoutClient() {
             <div key={item.variantId} className="flex justify-between text-sm">
               <span>
                 {item.productName} ({item.variantLabel}) &times; {item.quantity}
+                {item.extraSpicy && (
+                  <span className="ml-1 text-xs text-muted-foreground">🌶️ extra spicy</span>
+                )}
               </span>
               <span>{formatPaise(item.pricePaise * item.quantity)}</span>
             </div>

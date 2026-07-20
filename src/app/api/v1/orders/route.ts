@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
         unitPricePaiseSnapshot: item.pricePaise,
         quantity: item.quantity,
         lineTotalPaise: item.pricePaise * item.quantity,
+        extraSpicy: item.extraSpicy,
       })),
     );
 
