@@ -2,8 +2,8 @@ import Link from "next/link";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { Mail, MapPin } from "lucide-react";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
-import { OrderProgressBar } from "@/components/orders/order-progress-bar";
 import { OrderStatusUpdater } from "@/components/admin/order-status-updater";
+import { OrderDetailsDialog } from "@/components/admin/order-details-dialog";
 import { db } from "@/db";
 import { addresses, orderItems, orders, users } from "@/db/schema";
 import { formatPaise } from "@/lib/money";
@@ -110,14 +110,11 @@ export default async function AdminOrdersPage({
                       <p className="font-heading text-lg font-semibold text-primary">
                         {formatPaise(order.totalPaise)}
                       </p>
-                      <div className="mt-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <OrderStatusUpdater orderId={order.id} currentStatus={order.status} />
+                        <OrderDetailsDialog orderId={order.id} />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <OrderProgressBar status={order.status} />
                   </div>
 
                   <ul className="mt-3 flex flex-col gap-1 border-t pt-3 text-sm text-muted-foreground">
