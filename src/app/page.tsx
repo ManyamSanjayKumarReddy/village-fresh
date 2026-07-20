@@ -1,64 +1,155 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Leaf, CookingPot, ShieldCheck } from "lucide-react";
+import { Navbar } from "@/components/layout/navbar";
+import { ProductCard } from "@/components/catalog/product-card";
+import { buttonVariants } from "@/components/ui/button";
+import { getCategories, getFeaturedProducts, getProductsByCategory } from "@/lib/catalog";
+import { STOCK_IMAGES } from "@/lib/stock-images";
+import { cn } from "@/lib/utils";
 
-export default function Home() {
+export const revalidate = 60;
+
+const VALUE_PROPS = [
+  {
+    icon: CookingPot,
+    title: "Cooked the old way",
+    description: "Small batches, slow methods, recipes passed down in the family — not a factory line.",
+  },
+  {
+    icon: Leaf,
+    title: "From our fields to your kitchen",
+    description: "Groundnuts, mangoes and greens picked from the village, not sourced from a wholesaler.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Nothing hidden in the jar",
+    description: "Just spice, oil, salt and patience. No preservatives, no shortcuts.",
+  },
+];
+
+const ROW_SIZE = 4;
+
+export default async function Home() {
+  const [categories, featuredProducts] = await Promise.all([
+    getCategories(),
+    getFeaturedProducts(8),
+  ]);
+
+  const categoryRows = await Promise.all(
+    categories.map(async (category) => ({
+      category,
+      products: (await getProductsByCategory(category.id)).slice(0, ROW_SIZE),
+    })),
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="flex flex-1 flex-col">
+      <Navbar />
+
+      <section className="relative flex min-h-[420px] items-center justify-center overflow-hidden text-center sm:min-h-[480px]">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/images/hero-village.jpg"
+          alt="A farmer with a bullock cart on a village road at sunset, palm trees and a farmhouse in the background"
+          fill
           priority
+          className="object-cover"
+          sizes="100vw"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        <div className="relative z-10 mx-auto max-w-2xl px-4">
+          <h1 className="font-heading text-3xl font-semibold text-white sm:text-5xl">
+            Amma&apos;s kitchen, delivered to your door.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mx-auto mt-4 max-w-xl text-base text-white/90 sm:text-lg">
+            Podis, pickles, farm produce and snacks — made by hand in a
+            village kitchen, not a factory. Currently delivering across
+            Chennai.
           </p>
+          <Link href="#bestsellers" className={cn(buttonVariants({ size: "lg" }), "mt-6")}>
+            See what&apos;s fresh today
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </section>
+
+      <main className="flex-1">
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {VALUE_PROPS.map(({ icon: Icon, title, description }) => (
+              <div
+                key={title}
+                className="flex flex-col items-center gap-2 rounded-xl border bg-card px-6 py-6 text-center"
+              >
+                <Icon className="size-7 text-primary" />
+                <h3 className="font-heading text-base font-semibold">{title}</h3>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {featuredProducts.length > 0 && (
+          <section
+            id="bestsellers"
+            className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-12 sm:pb-16"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-heading text-xl font-semibold">What everyone reorders</h2>
+                <p className="text-sm text-muted-foreground">
+                  The jars that sell out first, every batch.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {categoryRows.map(
+          ({ category, products }) =>
+            products.length > 0 && (
+              <section key={category.id} className="mx-auto max-w-6xl px-4 pb-12 sm:pb-16">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <h2 className="font-heading text-xl font-semibold">{category.name}</h2>
+                    {category.teluguName && (
+                      <p className="text-sm text-muted-foreground">{category.teluguName}</p>
+                    )}
+                  </div>
+                  <Link
+                    href={`/category/${category.slug}`}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    View all
+                  </Link>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </section>
+            ),
+        )}
+
+        <section className="relative flex min-h-[260px] items-center justify-center overflow-hidden text-center">
+          <Image
+            src={STOCK_IMAGES.cropRows}
+            alt="Rows of crops on a village farm"
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+          <p className="relative z-10 mx-auto max-w-lg px-4 font-heading text-xl font-medium text-white sm:text-2xl">
+            No warehouses, no middlemen — just our family, our farm, and our
+            kitchen.
+          </p>
+        </section>
       </main>
     </div>
   );

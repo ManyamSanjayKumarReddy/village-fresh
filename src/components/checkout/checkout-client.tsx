@@ -1,0 +1,218 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { AddressForm } from "@/components/checkout/address-form";
+import { formatPaise } from "@/lib/money";
+import { calculateDeliveryFeePaise } from "@/lib/orders";
+import { useCartStore } from "@/store/cart-store";
+import { useHydrated } from "@/store/use-hydrated";
+
+type CartItem = {
+  variantId: number;
+  variantLabel: string;
+  pricePaise: number;
+  stockQty: number;
+  quantity: number;
+  productName: string;
+  productSlug: string;
+};
+
+type Address = {
+  id: number;
+  label: string | null;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  pincode: string;
+  phone: string;
+  isDefault: boolean;
+};
+
+export function CheckoutClient() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const hydrated = useHydrated();
+  const guestItems = useCartStore((s) => s.items);
+  const clearGuestCart = useCartStore((s) => s.clear);
+
+  const mergeAttempted = useRef(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
+
+  const mergeMutation = useMutation({
+    mutationFn: async (items: { variantId: number; quantity: number }[]) => {
+      const res = await fetch("/api/v1/cart/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+      if (!res.ok) throw new Error("Could not sync your cart.");
+      return res.json();
+    },
+    onSuccess: () => {
+      clearGuestCart();
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+  });
+
+  useEffect(() => {
+    if (!hydrated || mergeAttempted.current) return;
+    mergeAttempted.current = true;
+
+    if (guestItems.length > 0) {
+      mergeMutation.mutate(
+        guestItems.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  const cartQuery = useQuery({
+    queryKey: ["cart"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/cart");
+      if (!res.ok) throw new Error("Could not load your cart.");
+      return res.json() as Promise<{ items: CartItem[]; subtotalPaise: number }>;
+    },
+  });
+
+  const addressesQuery = useQuery({
+    queryKey: ["addresses"],
+    queryFn: async () => {
+      const res = await fetch("/api/v1/account/addresses");
+      if (!res.ok) throw new Error("Could not load addresses.");
+      const body = await res.json();
+      return body.items as Address[];
+    },
+  });
+
+  const defaultAddressId = addressesQuery.data?.length
+    ? (addressesQuery.data.find((a) => a.isDefault) ?? addressesQuery.data[0]).id
+    : null;
+  const effectiveAddressId = selectedAddressId ?? defaultAddressId;
+
+  const placeOrderMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/v1/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ addressId: effectiveAddressId, idempotencyKey }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error?.message ?? "Could not place your order.");
+      return body.order as { id: number };
+    },
+    onSuccess: (order) => {
+      router.push(`/account/orders/${order.id}`);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  if (!hydrated || cartQuery.isLoading || mergeMutation.isPending) {
+    return <p className="mt-8 text-muted-foreground">Loading your cart...</p>;
+  }
+
+  const items = cartQuery.data?.items ?? [];
+
+  if (items.length === 0) {
+    return <p className="mt-8 text-muted-foreground">Your cart is empty.</p>;
+  }
+
+  const subtotalPaise = cartQuery.data?.subtotalPaise ?? 0;
+  const deliveryFeePaise = calculateDeliveryFeePaise(subtotalPaise);
+  const totalPaise = subtotalPaise + deliveryFeePaise;
+
+  return (
+    <div className="mt-6 grid gap-8 sm:grid-cols-2">
+      <div>
+        <h2 className="font-heading text-lg font-semibold">Delivery address</h2>
+
+        {addressesQuery.data && addressesQuery.data.length > 0 && !showAddressForm && (
+          <RadioGroup
+            className="mt-3 flex flex-col gap-2"
+            value={effectiveAddressId ? String(effectiveAddressId) : undefined}
+            onValueChange={(value) => setSelectedAddressId(Number(value))}
+          >
+            {addressesQuery.data.map((address) => (
+              <Label
+                key={address.id}
+                htmlFor={`address-${address.id}`}
+                className="flex items-start gap-3 rounded-xl border bg-card p-4 has-[[data-state=checked]]:border-primary"
+              >
+                <RadioGroupItem value={String(address.id)} id={`address-${address.id}`} />
+                <span className="text-sm">
+                  {address.label && <span className="font-medium">{address.label} — </span>}
+                  {address.line1}, {address.line2 ? `${address.line2}, ` : ""}
+                  {address.city}, {address.state} - {address.pincode}
+                  <br />
+                  Phone: {address.phone}
+                </span>
+              </Label>
+            ))}
+          </RadioGroup>
+        )}
+
+        {!showAddressForm ? (
+          <Button variant="outline" className="mt-3" onClick={() => setShowAddressForm(true)}>
+            Add a new address
+          </Button>
+        ) : (
+          <div className="mt-3">
+            <AddressForm
+              onSaved={(id) => {
+                setSelectedAddressId(id);
+                setShowAddressForm(false);
+              }}
+              onCancel={() => setShowAddressForm(false)}
+            />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="font-heading text-lg font-semibold">Order summary</h2>
+        <div className="mt-3 flex flex-col gap-3 rounded-xl border bg-card p-4">
+          {items.map((item) => (
+            <div key={item.variantId} className="flex justify-between text-sm">
+              <span>
+                {item.productName} ({item.variantLabel}) &times; {item.quantity}
+              </span>
+              <span>{formatPaise(item.pricePaise * item.quantity)}</span>
+            </div>
+          ))}
+          <div className="border-t pt-3 text-sm text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>{formatPaise(subtotalPaise)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Delivery</span>
+              <span>{deliveryFeePaise === 0 ? "Free" : formatPaise(deliveryFeePaise)}</span>
+            </div>
+          </div>
+          <div className="flex justify-between border-t pt-3 font-heading text-lg font-semibold">
+            <span>Total</span>
+            <span>{formatPaise(totalPaise)}</span>
+          </div>
+        </div>
+
+        <Button
+          size="lg"
+          className="mt-4 w-full"
+          disabled={!effectiveAddressId || placeOrderMutation.isPending}
+          onClick={() => placeOrderMutation.mutate()}
+        >
+          {placeOrderMutation.isPending ? "Placing order..." : "Place order (Cash on Delivery)"}
+        </Button>
+      </div>
+    </div>
+  );
+}
