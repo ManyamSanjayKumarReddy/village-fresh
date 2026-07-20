@@ -1,6 +1,11 @@
+import { config as loadEnv } from "dotenv";
 import { neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { migrate } from "drizzle-orm/neon-http/migrator";
+
+// Loads .env.local for local dev; silently does nothing if the file doesn't
+// exist (e.g. on Vercel, where the platform injects env vars directly).
+loadEnv({ path: ".env.local" });
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
@@ -30,7 +35,7 @@ neonConfig.fetchFunction = async (input, init) => {
 const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
-console.log("Applying migrations over HTTPS (port 443)...");
+console.log(`Applying migrations to ${new URL(process.env.DATABASE_URL).hostname}...`);
 try {
   await migrate(db, { migrationsFolder: "src/db/migrations" });
   console.log("Migrations applied successfully.");
