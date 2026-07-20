@@ -2,17 +2,14 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Receipt, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderTimeline } from "@/components/orders/order-timeline";
 import { formatPaise } from "@/lib/money";
+import { ORDER_STATUS_META, type OrderStatus } from "@/lib/order-status";
+import { cn } from "@/lib/utils";
 
 type OrderDetail = {
   order: {
@@ -57,6 +54,8 @@ export function OrderDetailsDialog({ orderId }: { orderId: number }) {
     enabled: open,
   });
 
+  const statusMeta = data ? ORDER_STATUS_META[data.order.status as OrderStatus] : null;
+
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
@@ -64,92 +63,107 @@ export function OrderDetailsDialog({ orderId }: { orderId: number }) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Order #{orderId}</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-h-[85vh] max-w-lg gap-0 overflow-y-auto p-0">
+          <DialogTitle className="sr-only">Order #{orderId} details</DialogTitle>
 
           {isLoading || !data ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Loading...</p>
+            <p className="py-16 text-center text-sm text-muted-foreground">Loading...</p>
           ) : (
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center justify-between">
-                <OrderStatusBadge status={data.order.status} />
-                <p className="font-heading text-lg font-semibold text-primary">
-                  {formatPaise(data.order.totalPaise)}
-                </p>
-              </div>
+            <>
+              <div className={cn("h-1.5 w-full", statusMeta?.solid.split(" ")[0])} />
 
-              <div>
-                <h3 className="text-sm font-semibold">Customer</h3>
-                <div className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
-                  <p>{data.customer.name}</p>
-                  <p className="flex items-center gap-1.5">
-                    <Mail className="size-3.5" />
-                    {data.customer.email}
+              <div className="flex items-center justify-between gap-3 px-6 pt-5 pb-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Order
                   </p>
-                  <p className="flex items-center gap-1.5">
-                    <Phone className="size-3.5" />
-                    {data.address.phone}
-                  </p>
-                  <p className="flex items-start gap-1.5">
-                    <MapPin className="mt-0.5 size-3.5 shrink-0" />
-                    <span>
-                      {data.address.label && (
-                        <span className="font-medium text-foreground">
-                          {data.address.label} —{" "}
-                        </span>
-                      )}
-                      {data.address.line1}
-                      {data.address.line2 ? `, ${data.address.line2}` : ""},{" "}
-                      {data.address.city}, {data.address.state} - {data.address.pincode}
-                    </span>
+                  <h2 className="font-heading text-xl font-semibold">#{data.order.id}</h2>
+                </div>
+                <div className="text-right">
+                  <OrderStatusBadge status={data.order.status} />
+                  <p className="mt-1.5 font-heading text-lg font-semibold text-primary">
+                    {formatPaise(data.order.totalPaise)}
                   </p>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-sm font-semibold">Items</h3>
-                <div className="mt-2 flex flex-col gap-1.5 text-sm">
-                  {data.items.map((item) => (
-                    <div key={item.id} className="flex justify-between gap-2">
-                      <span className="text-muted-foreground">
-                        {item.productNameSnapshot} ({item.variantLabelSnapshot}) &times;{" "}
-                        {item.quantity}
-                        {item.extraSpicy && <span className="ml-1">🌶️</span>}
+              <div className="flex flex-col gap-3 px-6 pb-6">
+                <section className="rounded-xl border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold">{data.customer.name}</h3>
+                  <div className="mt-2 flex flex-col gap-1.5 text-sm text-muted-foreground">
+                    <p className="flex items-center gap-2">
+                      <Mail className="size-3.5 shrink-0" />
+                      {data.customer.email}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Phone className="size-3.5 shrink-0" />
+                      {data.address.phone}
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                      <span>
+                        {data.address.label && (
+                          <span className="font-medium text-foreground">
+                            {data.address.label} —{" "}
+                          </span>
+                        )}
+                        {data.address.line1}
+                        {data.address.line2 ? `, ${data.address.line2}` : ""},{" "}
+                        {data.address.city}, {data.address.state} - {data.address.pincode}
                       </span>
-                      <span className="shrink-0 font-medium">
-                        {formatPaise(item.lineTotalPaise)}
+                    </p>
+                  </div>
+                </section>
+
+                <section className="rounded-xl border p-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold">
+                    <Receipt className="size-4 text-primary" />
+                    Items
+                  </h3>
+                  <div className="mt-3 flex flex-col gap-2 text-sm">
+                    {data.items.map((item) => (
+                      <div key={item.id} className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">
+                          {item.productNameSnapshot} ({item.variantLabelSnapshot}) &times;{" "}
+                          {item.quantity}
+                          {item.extraSpicy && <span className="ml-1">🌶️</span>}
+                        </span>
+                        <span className="shrink-0 font-medium">
+                          {formatPaise(item.lineTotalPaise)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-col gap-1 border-t pt-3 text-sm text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>{formatPaise(data.order.subtotalPaise)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Delivery</span>
+                      <span>
+                        {data.order.deliveryFeePaise === 0
+                          ? "Free"
+                          : formatPaise(data.order.deliveryFeePaise)}
                       </span>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-col gap-1 border-t pt-3 text-sm text-muted-foreground">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>{formatPaise(data.order.subtotalPaise)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Delivery</span>
-                    <span>
-                      {data.order.deliveryFeePaise === 0
-                        ? "Free"
-                        : formatPaise(data.order.deliveryFeePaise)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                </section>
 
-              <div>
-                <h3 className="text-sm font-semibold">Progress</h3>
-                <div className="mt-3">
-                  <OrderTimeline
-                    currentStatus={data.order.status}
-                    statusHistory={data.statusHistory}
-                  />
-                </div>
+                <section className="rounded-xl border p-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold">
+                    <Route className="size-4 text-primary" />
+                    Progress
+                  </h3>
+                  <div className="mt-4">
+                    <OrderTimeline
+                      currentStatus={data.order.status}
+                      statusHistory={data.statusHistory}
+                    />
+                  </div>
+                </section>
               </div>
-            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
