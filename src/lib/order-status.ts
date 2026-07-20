@@ -18,9 +18,13 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
-/** Linear happy-path order of stages; "cancelled" is a separate terminal branch. */
+/**
+ * Linear happy-path order of stages shown in the timeline; "cancelled" is a
+ * separate terminal branch. "pending" is a valid enum value (reserved for a
+ * future online-payment-awaiting state) but orders are created straight into
+ * "confirmed" today (COD only), so it's never a real stage to display.
+ */
 export const ORDER_STAGE_SEQUENCE: OrderStatus[] = [
-  "pending",
   "confirmed",
   "packed",
   "shipped",

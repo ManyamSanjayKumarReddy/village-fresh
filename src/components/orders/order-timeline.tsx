@@ -53,7 +53,6 @@ export function OrderTimeline({
             timestamp={entry?.changedAt}
             isLast={i === ORDER_STAGE_SEQUENCE.length - 1}
             reached={reached}
-            current={i === currentIndex}
           />
         );
       })}
@@ -67,14 +66,12 @@ function TimelineRow({
   timestamp,
   isLast,
   reached,
-  current,
 }: {
   status: OrderStatus;
   note?: string | null;
   timestamp?: Date | string;
   isLast: boolean;
   reached: boolean;
-  current?: boolean;
 }) {
   const meta = ORDER_STATUS_META[status];
   const Icon = meta.icon;
@@ -93,7 +90,6 @@ function TimelineRow({
         className={cn(
           "relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2",
           reached ? meta.solid : "border-border bg-background text-muted-foreground",
-          current && "ring-4 ring-primary/20",
         )}
       >
         <Icon className="size-4" />

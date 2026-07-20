@@ -11,16 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ORDER_STAGE_SEQUENCE, ORDER_STATUS_META, type OrderStatus } from "@/lib/order-status";
 
-const STATUSES = [
-  "pending",
-  "confirmed",
-  "packed",
-  "shipped",
-  "out_for_delivery",
-  "delivered",
-  "cancelled",
-];
+const STATUSES: OrderStatus[] = [...ORDER_STAGE_SEQUENCE, "cancelled"];
 
 export function OrderStatusUpdater({
   orderId,
@@ -48,7 +41,7 @@ export function OrderStatusUpdater({
       return;
     }
 
-    toast.success(`Order #${orderId} marked ${status.replace(/_/g, " ")}.`);
+    toast.success(`Order #${orderId} marked ${ORDER_STATUS_META[status as OrderStatus]?.label ?? status}.`);
     router.refresh();
   }
 
@@ -61,7 +54,7 @@ export function OrderStatusUpdater({
         <SelectContent>
           {STATUSES.map((s) => (
             <SelectItem key={s} value={s}>
-              {s.replace(/_/g, " ")}
+              {ORDER_STATUS_META[s].label}
             </SelectItem>
           ))}
         </SelectContent>
