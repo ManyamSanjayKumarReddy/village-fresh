@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { apiError, unexpectedApiError } from "@/lib/api-error";
+import { IS_LOCAL } from "@/lib/env";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
@@ -23,15 +25,33 @@ export async function POST(request: NextRequest) {
 
   try {
     const extension = file.name.split(".").pop() ?? "jpg";
-    const key = `products/${crypto.randomUUID()}.${extension}`;
+    const filename = `${crypto.randomUUID()}.${extension}`;
 
-    const blob = await put(key, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
+    const url = IS_LOCAL
+      ? await saveLocal(file, filename)
+      : await saveToBlob(file, filename);
 
-    return NextResponse.json({ url: blob.url }, { status: 201 });
+    return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
     return unexpectedApiError(error);
   }
+}
+
+async function saveLocal(file: File, filename: string): Promise<string> {
+  const dir = path.join(process.cwd(), "public", "storage", "products");
+  await mkdir(dir, { recursive: true });
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(path.join(dir, filename), buffer);
+
+  return `/storage/products/${filename}`;
+}
+
+async function saveToBlob(file: File, filename: string): Promise<string> {
+  const { put } = await import("@vercel/blob");
+  const blob = await put(`products/${filename}`, file, {
+    access: "public",
+    addRandomSuffix: false,
+  });
+  return blob.url;
 }

@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# locally-uploaded product images (ENV=Local storage backend)
+/public/storage/*
+!/public/storage/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
