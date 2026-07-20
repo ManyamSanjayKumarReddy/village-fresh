@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -137,6 +138,7 @@ export function PincodeManager() {
             <Input id="city" required value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
           <Button type="submit" disabled={addMutation.isPending}>
+            {addMutation.isPending && <Spinner />}
             {addMutation.isPending ? "Adding..." : "Add pincode"}
           </Button>
         </form>

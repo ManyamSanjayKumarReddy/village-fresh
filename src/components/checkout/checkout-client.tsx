@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Tag, X } from "lucide-react";
 import { AddressForm } from "@/components/checkout/address-form";
 import { formatPaise } from "@/lib/money";
 import { calculateDeliveryFeePaise } from "@/lib/orders";
@@ -47,6 +50,12 @@ export function CheckoutClient() {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    title: string;
+    discountPaise: number;
+  } | null>(null);
 
   const mergeMutation = useMutation({
     mutationFn: async (
@@ -124,7 +133,12 @@ export function CheckoutClient() {
   });
 
   if (!hydrated || cartQuery.isLoading || mergeMutation.isPending) {
-    return <p className="mt-8 text-muted-foreground">Loading your cart...</p>;
+    return (
+      <div className="mt-16 flex flex-col items-center gap-3 text-muted-foreground">
+        <Spinner className="size-6" />
+        <p className="text-sm">Loading your cart...</p>
+      </div>
+    );
   }
 
   const items = cartQuery.data?.items ?? [];
@@ -235,6 +249,7 @@ export function CheckoutClient() {
           disabled={!effectiveAddressId || placeOrderMutation.isPending}
           onClick={() => placeOrderMutation.mutate()}
         >
+          {placeOrderMutation.isPending && <Spinner />}
           {placeOrderMutation.isPending ? "Placing order..." : "Place order (Cash on Delivery)"}
         </Button>
       </div>

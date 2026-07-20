@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -183,6 +184,7 @@ export function NewProductForm({ categories }: { categories: Category[] }) {
       </div>
 
       <Button type="submit" disabled={saving || !categoryId}>
+        {saving && <Spinner />}
         {saving ? "Creating..." : "Create product"}
       </Button>
     </form>

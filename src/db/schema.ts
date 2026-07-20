@@ -37,6 +37,8 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "cod",
 ]);
 
+export const discountTypeEnum = pgEnum("discount_type", ["percentage", "flat"]);
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -131,6 +133,24 @@ export const cartItems = pgTable("cart_items", {
   cartVariantIdx: uniqueIndex("cart_items_cart_variant_idx").on(table.cartId, table.variantId),
 }));
 
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 30 }).notNull(),
+  title: text("title").notNull(),
+  discountType: discountTypeEnum("discount_type").notNull(),
+  discountValue: integer("discount_value").notNull(),
+  minOrderSubtotalPaise: integer("min_order_subtotal_paise").notNull().default(0),
+  maxDiscountPaise: integer("max_discount_paise"),
+  startsAt: timestamp("starts_at", { withTimezone: true }),
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+  maxRedemptions: integer("max_redemptions"),
+  timesRedeemed: integer("times_redeemed").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  codeIdx: uniqueIndex("coupons_code_idx").on(table.code),
+}));
+
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
@@ -138,6 +158,8 @@ export const orders = pgTable("orders", {
   status: orderStatusEnum("status").notNull().default("pending"),
   subtotalPaise: integer("subtotal_paise").notNull(),
   deliveryFeePaise: integer("delivery_fee_paise").notNull().default(0),
+  couponCode: varchar("coupon_code", { length: 30 }),
+  discountPaise: integer("discount_paise").notNull().default(0),
   totalPaise: integer("total_paise").notNull(),
   paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
   paymentProvider: varchar("payment_provider", { length: 50 }),

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ProductImageUploader({
   productId,
@@ -86,6 +87,7 @@ export function ProductImageUploader({
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
       >
+        {uploading && <Spinner />}
         {uploading ? "Uploading..." : preview ? "Change photo" : "Add photo"}
       </Button>
     </div>

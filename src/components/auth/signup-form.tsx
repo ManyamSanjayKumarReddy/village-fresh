@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleIcon } from "@/components/auth/google-icon";
@@ -91,6 +92,7 @@ export function SignupForm() {
           />
         </div>
         <Button type="submit" disabled={loading}>
+          {loading && <Spinner />}
           {loading ? "Creating account..." : "Create account"}
         </Button>
       </form>

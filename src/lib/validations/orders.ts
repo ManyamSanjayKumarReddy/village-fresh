@@ -3,6 +3,7 @@ import { z } from "zod";
 export const createOrderSchema = z.object({
   addressId: z.coerce.number().int().positive(),
   idempotencyKey: z.string().trim().min(8).max(128),
+  couponCode: z.string().trim().toUpperCase().min(1).max(30).optional(),
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;

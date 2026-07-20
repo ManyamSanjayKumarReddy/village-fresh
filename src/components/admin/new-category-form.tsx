@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -106,6 +107,7 @@ export function NewCategoryForm() {
         />
       </div>
       <Button type="submit" disabled={saving}>
+        {saving && <Spinner />}
         {saving ? "Creating..." : "Create category"}
       </Button>
     </form>

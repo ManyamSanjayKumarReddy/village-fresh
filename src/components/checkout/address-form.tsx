@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -130,6 +131,7 @@ export function AddressForm({
       </div>
       <div className="mt-2 flex gap-2">
         <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending && <Spinner />}
           {mutation.isPending ? "Saving..." : "Save address"}
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel}>

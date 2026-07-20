@@ -81,3 +81,30 @@ export const createPincodeSchema = z.object({
 export const updatePincodeSchema = z.object({
   isActive: z.boolean(),
 });
+
+export const createCouponSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .min(3)
+      .max(30)
+      .regex(/^[A-Z0-9]+$/, "Use letters and numbers only"),
+    title: z.string().trim().min(2).max(200),
+    discountType: z.enum(["percentage", "flat"]),
+    discountValue: z.coerce.number().int().positive(),
+    minOrderSubtotalPaise: z.coerce.number().int().min(0).default(0),
+    maxDiscountPaise: z.coerce.number().int().positive().optional(),
+    startsAt: z.string().datetime().optional().or(z.literal("")),
+    endsAt: z.string().datetime().optional().or(z.literal("")),
+    maxRedemptions: z.coerce.number().int().positive().optional(),
+  })
+  .refine((data) => data.discountType !== "percentage" || data.discountValue <= 100, {
+    message: "Percentage discount can't exceed 100.",
+    path: ["discountValue"],
+  });
+
+export const updateCouponSchema = z.object({
+  isActive: z.boolean(),
+});

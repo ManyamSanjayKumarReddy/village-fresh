@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Select,
   SelectContent,
@@ -60,7 +61,8 @@ export function OrderStatusUpdater({
         </SelectContent>
       </Select>
       <Button size="sm" disabled={status === currentStatus || saving} onClick={handleSave}>
-        {saving ? "Saving..." : "Save"}
+        {saving && <Spinner />}
+        Save
       </Button>
     </div>
   );

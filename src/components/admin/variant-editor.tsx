@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 
 export function VariantEditor({
@@ -73,7 +74,8 @@ export function VariantEditor({
         Active
       </label>
       <Button size="sm" disabled={!dirty || saving} onClick={handleSave}>
-        {saving ? "Saving..." : "Save"}
+        {saving && <Spinner />}
+        Save
       </Button>
     </div>
   );

@@ -38,6 +38,7 @@ export const config = {
     "/api/v1/account/:path*",
     "/api/v1/orders/:path*",
     "/api/v1/cart/:path*",
+    "/api/v1/coupons/:path*",
     "/api/v1/admin/:path*",
   ],
 };

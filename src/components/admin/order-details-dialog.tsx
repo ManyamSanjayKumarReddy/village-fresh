@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, Phone, MapPin, Receipt, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { OrderTimeline } from "@/components/orders/order-timeline";
@@ -67,7 +68,9 @@ export function OrderDetailsDialog({ orderId }: { orderId: number }) {
           <DialogTitle className="sr-only">Order #{orderId} details</DialogTitle>
 
           {isLoading || !data ? (
-            <p className="py-16 text-center text-sm text-muted-foreground">Loading...</p>
+            <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
+              <Spinner className="size-6" />
+            </div>
           ) : (
             <>
               <div className={cn("h-1.5 w-full", statusMeta?.solid.split(" ")[0])} />

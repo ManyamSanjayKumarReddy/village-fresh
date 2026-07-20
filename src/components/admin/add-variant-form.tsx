@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 
 export function AddVariantForm({ productId }: { productId: number }) {
@@ -79,7 +80,8 @@ export function AddVariantForm({ productId }: { productId: number }) {
         className="h-8 w-20"
       />
       <Button type="submit" size="sm" disabled={saving}>
-        {saving ? "Saving..." : "Save"}
+        {saving && <Spinner />}
+        Save
       </Button>
       <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
         Cancel

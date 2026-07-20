@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import {
   addresses,
+  coupons,
   orderItems,
   orderStatusHistory,
   orders,
@@ -12,6 +13,7 @@ import {
 } from "@/db/schema";
 import { clearCart, getCartDetails } from "@/lib/cart";
 import { calculateDeliveryFeePaise } from "@/lib/orders";
+import { validateCoupon } from "@/lib/coupons";
 import { createOrderSchema, listOrdersQuerySchema } from "@/lib/validations/orders";
 import { apiError, zodApiError, unexpectedApiError } from "@/lib/api-error";
 
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 
   const userId = Number(session.user.id);
-  const { addressId, idempotencyKey } = parsed.data;
+  const { addressId, idempotencyKey, couponCode } = parsed.data;
 
   try {
     const [existingOrder] = await db
@@ -122,7 +124,31 @@ export async function POST(request: NextRequest) {
 
     const subtotalPaise = cart.subtotalPaise;
     const deliveryFeePaise = calculateDeliveryFeePaise(subtotalPaise);
-    const totalPaise = subtotalPaise + deliveryFeePaise;
+
+    let discountPaise = 0;
+    let appliedCoupon: typeof coupons.$inferSelect | null = null;
+
+    if (couponCode) {
+      const [coupon] = await db
+        .select()
+        .from(coupons)
+        .where(eq(coupons.code, couponCode))
+        .limit(1);
+
+      if (!coupon) {
+        return apiError("COUPON_NOT_FOUND", "That coupon code doesn't exist.", 404);
+      }
+
+      const result = validateCoupon(coupon, subtotalPaise);
+      if (!result.ok) {
+        return apiError("COUPON_INVALID", result.reason, 422);
+      }
+
+      discountPaise = result.discountPaise;
+      appliedCoupon = coupon;
+    }
+
+    const totalPaise = subtotalPaise + deliveryFeePaise - discountPaise;
 
     // Not wrapped in a DB transaction: the neon-http driver used here (chosen
     // for network reasons, see project notes) doesn't support db.transaction().
@@ -136,12 +162,21 @@ export async function POST(request: NextRequest) {
         status: "confirmed",
         subtotalPaise,
         deliveryFeePaise,
+        couponCode: appliedCoupon?.code,
+        discountPaise,
         totalPaise,
         paymentStatus: "cod",
         paymentProvider: "cod",
         idempotencyKey,
       })
       .returning();
+
+    if (appliedCoupon) {
+      await db
+        .update(coupons)
+        .set({ timesRedeemed: appliedCoupon.timesRedeemed + 1 })
+        .where(eq(coupons.id, appliedCoupon.id));
+    }
 
     await db.insert(orderItems).values(
       cart.items.map((item) => ({
