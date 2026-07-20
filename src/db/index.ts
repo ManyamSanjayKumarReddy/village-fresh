@@ -6,6 +6,11 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
+// Defensive: a stray trailing newline/whitespace in the env var (easy to
+// introduce when pasting into a dashboard) breaks the HTTP driver, which
+// uses this value directly as a header.
+const databaseUrl = process.env.DATABASE_URL.trim();
+
 const MAX_ATTEMPTS = 8;
 const BASE_DELAY_MS = 300;
 
@@ -26,6 +31,6 @@ neonConfig.fetchFunction = async (input: RequestInfo | URL, init?: RequestInit) 
   throw lastError;
 };
 
-const sql = neon(process.env.DATABASE_URL);
+const sql = neon(databaseUrl);
 
 export const db = drizzle(sql, { schema });

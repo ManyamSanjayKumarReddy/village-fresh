@@ -11,6 +11,10 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
+// Defensive: strip stray whitespace/newlines that break header construction
+// in the HTTP driver (see e.g. pasting a connection string into a dashboard).
+const databaseUrl = process.env.DATABASE_URL.trim();
+
 const MAX_ATTEMPTS = 6;
 const BASE_DELAY_MS = 500;
 
@@ -32,10 +36,10 @@ neonConfig.fetchFunction = async (input, init) => {
   throw lastError;
 };
 
-const sql = neon(process.env.DATABASE_URL);
+const sql = neon(databaseUrl);
 const db = drizzle(sql);
 
-console.log(`Applying migrations to ${new URL(process.env.DATABASE_URL).hostname}...`);
+console.log(`Applying migrations to ${new URL(databaseUrl).hostname}...`);
 try {
   await migrate(db, { migrationsFolder: "src/db/migrations" });
   console.log("Migrations applied successfully.");

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, productVariants, products } from "@/db/schema";
@@ -90,6 +91,8 @@ export async function POST(request: NextRequest) {
         stockQty: parsed.data.variantStockQty,
       })
       .returning();
+
+    revalidateTag("products");
 
     return NextResponse.json({ product: { ...product, variants: [variant] } }, { status: 201 });
   } catch (error) {

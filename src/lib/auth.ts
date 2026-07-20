@@ -6,6 +6,14 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 
+function isAdminEmail(email: string) {
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return adminEmails.includes(email.toLowerCase());
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -71,6 +79,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .where(eq(users.id, existing.id));
         }
       }
+
+      if (user.email && isAdminEmail(user.email)) {
+        await db
+          .update(users)
+          .set({ role: "admin" })
+          .where(eq(users.email, user.email.toLowerCase()));
+      }
+
       return true;
     },
     async jwt({ token, user, trigger }) {

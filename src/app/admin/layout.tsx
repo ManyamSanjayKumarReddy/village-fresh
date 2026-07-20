@@ -15,6 +15,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin/products" className="text-foreground/80 hover:text-primary">
               Products
             </Link>
+            <Link href="/admin/categories" className="text-foreground/80 hover:text-primary">
+              Categories
+            </Link>
+            <Link href="/admin/pincodes" className="text-foreground/80 hover:text-primary">
+              Pincodes
+            </Link>
           </nav>
           <Link href="/" className="ml-auto text-sm text-muted-foreground hover:text-primary">
             Back to store

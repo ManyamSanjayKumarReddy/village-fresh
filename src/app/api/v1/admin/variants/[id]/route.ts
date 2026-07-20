@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { productVariants } from "@/db/schema";
@@ -31,6 +32,8 @@ export async function PATCH(
     if (!variant) {
       return apiError("VARIANT_NOT_FOUND", "Variant not found.", 404);
     }
+
+    revalidateTag("products");
 
     return NextResponse.json({ variant });
   } catch (error) {

@@ -49,3 +49,28 @@ export const updateVariantSchema = z.object({
   stockQty: z.coerce.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
 });
+
+export const createCategorySchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  slug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(160)
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens only"),
+  teluguName: z.string().trim().max(200).optional(),
+  description: z.string().trim().max(500).optional(),
+  sortOrder: z.coerce.number().int().default(0),
+});
+
+export const createPincodeSchema = z.object({
+  pincode: z
+    .string()
+    .trim()
+    .regex(/^[1-9][0-9]{5}$/, "Enter a valid 6-digit pincode"),
+  city: z.string().trim().min(2).max(100),
+});
+
+export const updatePincodeSchema = z.object({
+  isActive: z.boolean(),
+});
