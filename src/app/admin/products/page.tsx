@@ -2,6 +2,7 @@ import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
 import { buttonVariants } from "@/components/ui/button";
 import { ProductToggle } from "@/components/admin/product-toggle";
+import { ProductImageUploader } from "@/components/admin/product-image-uploader";
 import { VariantEditor } from "@/components/admin/variant-editor";
 import { db } from "@/db";
 import { categories, productVariants, products } from "@/db/schema";
@@ -14,6 +15,7 @@ export default async function AdminProductsPage() {
       id: products.id,
       name: products.name,
       slug: products.slug,
+      images: products.images,
       isActive: products.isActive,
       isFeatured: products.isFeatured,
       categoryName: categories.name,
@@ -62,6 +64,11 @@ export default async function AdminProductsPage() {
                 />
               </div>
             </div>
+
+            <div className="mt-3">
+              <ProductImageUploader productId={product.id} imageUrl={product.images[0]} />
+            </div>
+
             <div className="mt-3 flex flex-wrap gap-2">
               {(variantsByProduct.get(product.id) ?? []).map((variant) => (
                 <VariantEditor

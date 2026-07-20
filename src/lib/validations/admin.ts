@@ -42,6 +42,7 @@ export const updateProductSchema = z.object({
   longDescription: z.string().trim().max(4000).optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
+  images: z.array(z.string().url()).max(5).optional(),
 });
 
 export const updateVariantSchema = z.object({

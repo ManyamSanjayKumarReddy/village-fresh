@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const cheapest = [...product.variants].sort((a, b) => a.pricePaise - b.pricePaise)[0];
 
   return (
-    <Card className="overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
+    <Card className="flex h-full flex-col overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
       <Link href={`/product/${product.slug}`} className="group block">
         <div className="relative aspect-square w-full bg-muted">
           {product.images[0] ? (
@@ -64,16 +64,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
               {product.shortDescription}
             </p>
           )}
-          {cheapest && (
-            <p className="mt-2 font-heading text-lg font-semibold text-primary">
-              From {formatPaise(cheapest.pricePaise)}
-            </p>
-          )}
         </CardContent>
       </Link>
 
       {cheapest && (
-        <CardContent className="p-4 pt-3">
+        <CardContent className="mt-auto flex flex-col gap-2 p-4 pt-3">
+          <p className="font-heading text-lg font-semibold text-primary">
+            From {formatPaise(cheapest.pricePaise)}
+          </p>
           <QuickAddToCart
             productSlug={product.slug}
             productName={product.name}
