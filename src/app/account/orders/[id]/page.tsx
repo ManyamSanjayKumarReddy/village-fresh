@@ -117,6 +117,12 @@ export default async function OrderDetailPage({
                     {order.deliveryFeePaise === 0 ? "Free" : formatPaise(order.deliveryFeePaise)}
                   </span>
                 </div>
+                {order.discountPaise > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>Coupon ({order.couponCode})</span>
+                    <span>-{formatPaise(order.discountPaise)}</span>
+                  </div>
+                )}
               </div>
               <div className="mt-3 flex justify-between border-t pt-3 font-heading text-lg font-semibold">
                 <span>Total</span>

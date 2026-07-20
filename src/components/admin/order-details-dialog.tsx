@@ -18,6 +18,8 @@ type OrderDetail = {
     status: string;
     subtotalPaise: number;
     deliveryFeePaise: number;
+    couponCode: string | null;
+    discountPaise: number;
     totalPaise: number;
     placedAt: string;
   };
@@ -150,6 +152,12 @@ export function OrderDetailsDialog({ orderId }: { orderId: number }) {
                           : formatPaise(data.order.deliveryFeePaise)}
                       </span>
                     </div>
+                    {data.order.discountPaise > 0 && (
+                      <div className="flex justify-between text-primary">
+                        <span>Coupon ({data.order.couponCode})</span>
+                        <span>-{formatPaise(data.order.discountPaise)}</span>
+                      </div>
+                    )}
                   </div>
                 </section>
 

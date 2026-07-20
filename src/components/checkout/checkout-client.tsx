@@ -120,7 +120,11 @@ export function CheckoutClient() {
       const res = await fetch("/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addressId: effectiveAddressId, idempotencyKey }),
+        body: JSON.stringify({
+          addressId: effectiveAddressId,
+          idempotencyKey,
+          couponCode: appliedCoupon?.code,
+        }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error?.message ?? "Could not place your order.");
@@ -128,6 +132,24 @@ export function CheckoutClient() {
     },
     onSuccess: (order) => {
       router.push(`/account/orders/${order.id}`);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const applyCouponMutation = useMutation({
+    mutationFn: async (subtotal: number) => {
+      const res = await fetch("/api/v1/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput, subtotalPaise: subtotal }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error?.message ?? "Could not apply coupon.");
+      return body as { code: string; title: string; discountPaise: number };
+    },
+    onSuccess: (data) => {
+      setAppliedCoupon(data);
+      toast.success(`${data.code} applied — ${data.title}`);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -149,7 +171,8 @@ export function CheckoutClient() {
 
   const subtotalPaise = cartQuery.data?.subtotalPaise ?? 0;
   const deliveryFeePaise = calculateDeliveryFeePaise(subtotalPaise);
-  const totalPaise = subtotalPaise + deliveryFeePaise;
+  const discountPaise = appliedCoupon?.discountPaise ?? 0;
+  const totalPaise = subtotalPaise + deliveryFeePaise - discountPaise;
 
   return (
     <div className="mt-6 grid gap-8 sm:grid-cols-2">
@@ -214,6 +237,43 @@ export function CheckoutClient() {
           </label>
         </div>
 
+        <h2 className="mt-6 font-heading text-lg font-semibold">Have a coupon?</h2>
+        {appliedCoupon ? (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-primary bg-primary/5 p-3 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <Tag className="size-4 text-primary" />
+              {appliedCoupon.code} applied — {appliedCoupon.title}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setAppliedCoupon(null);
+                setCouponInput("");
+              }}
+              aria-label="Remove coupon"
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 flex gap-2">
+            <Input
+              placeholder="Enter coupon code"
+              value={couponInput}
+              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+            />
+            <Button
+              variant="outline"
+              disabled={!couponInput || applyCouponMutation.isPending}
+              onClick={() => applyCouponMutation.mutate(subtotalPaise)}
+            >
+              {applyCouponMutation.isPending && <Spinner />}
+              Apply
+            </Button>
+          </div>
+        )}
+
         <h2 className="mt-6 font-heading text-lg font-semibold">Order summary</h2>
         <div className="mt-3 flex flex-col gap-3 rounded-xl border bg-card p-4">
           {items.map((item) => (
@@ -236,6 +296,12 @@ export function CheckoutClient() {
               <span>Delivery</span>
               <span>{deliveryFeePaise === 0 ? "Free" : formatPaise(deliveryFeePaise)}</span>
             </div>
+            {discountPaise > 0 && (
+              <div className="flex justify-between text-primary">
+                <span>Coupon ({appliedCoupon?.code})</span>
+                <span>-{formatPaise(discountPaise)}</span>
+              </div>
+            )}
           </div>
           <div className="flex justify-between border-t pt-3 font-heading text-lg font-semibold">
             <span>Total</span>
