@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    revalidateTag("products");
+    revalidateTag("products", {});
 
     return NextResponse.json({ product: { ...product, variants: [variant] } }, { status: 201 });
   } catch (error) {

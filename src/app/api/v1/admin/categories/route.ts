@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const [category] = await db.insert(categories).values(parsed.data).returning();
 
-    revalidateTag("categories");
+    revalidateTag("categories", {});
 
     return NextResponse.json({ category }, { status: 201 });
   } catch (error) {

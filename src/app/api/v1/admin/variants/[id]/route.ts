@@ -33,7 +33,7 @@ export async function PATCH(
       return apiError("VARIANT_NOT_FOUND", "Variant not found.", 404);
     }
 
-    revalidateTag("products");
+    revalidateTag("products", {});
 
     return NextResponse.json({ variant });
   } catch (error) {

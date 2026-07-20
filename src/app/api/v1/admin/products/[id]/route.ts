@@ -33,7 +33,7 @@ export async function PATCH(
       return apiError("PRODUCT_NOT_FOUND", "Product not found.", 404);
     }
 
-    revalidateTag("products");
+    revalidateTag("products", {});
 
     return NextResponse.json({ product });
   } catch (error) {
