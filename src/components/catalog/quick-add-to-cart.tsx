@@ -40,31 +40,33 @@ export function QuickAddToCart({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-1.5">
-        {sorted.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSelectedId(v.id);
-            }}
-            className={cn(
-              "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-              v.id === selected.id
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary",
-            )}
-          >
-            {v.label}
-          </button>
-        ))}
-      </div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap gap-1">
+          {sorted.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedId(v.id);
+              }}
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors",
+                v.id === selected.id
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary",
+              )}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
 
-      <p className="font-heading text-lg font-semibold text-primary">
-        {formatPaise(selected.pricePaise)}
-      </p>
+        <p className="shrink-0 font-heading text-base font-semibold text-primary">
+          {formatPaise(selected.pricePaise)}
+        </p>
+      </div>
 
       {!hydrated ? (
         <div className="h-8 w-full" />

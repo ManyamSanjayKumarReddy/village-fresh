@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuickAddToCart } from "@/components/catalog/quick-add-to-cart";
+import { ProductImagePlaceholder } from "@/components/catalog/product-image-placeholder";
+import { VegIndicator } from "@/components/catalog/veg-indicator";
 
 type ProductCardVariant = {
   id: number;
@@ -35,23 +37,18 @@ export function ProductCard({ product }: { product: ProductCardData }) {
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-              Photo coming soon
-            </div>
+            <ProductImagePlaceholder />
           )}
-          <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
-            <Badge variant={product.isVeg ? "secondary" : "destructive"}>
-              {product.isVeg ? "Veg" : "Non-veg"}
-            </Badge>
-            {product.isFeatured && (
-              <Badge className="bg-accent text-accent-foreground">Bestseller</Badge>
-            )}
+          <div className="absolute left-2 top-2">
+            <VegIndicator isVeg={product.isVeg} />
           </div>
+          {product.isFeatured && (
+            <Badge className="absolute right-2 top-2 bg-accent text-accent-foreground">
+              Bestseller
+            </Badge>
+          )}
         </div>
         <CardContent className="p-4 pb-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">
-            Home-made
-          </p>
           <h3 className="font-heading text-base leading-tight">{product.name}</h3>
           {product.teluguName && (
             <p className="text-sm text-muted-foreground">{product.teluguName}</p>

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/layout/navbar";
 import { AddToCart } from "@/components/catalog/add-to-cart";
+import { ProductImagePlaceholder } from "@/components/catalog/product-image-placeholder";
+import { VegIndicator } from "@/components/catalog/veg-indicator";
 import { getProductBySlug } from "@/lib/catalog";
 
 export const revalidate = 60;
@@ -32,25 +34,21 @@ export default async function ProductPage({
               priority
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-              Photo coming soon
-            </div>
+            <ProductImagePlaceholder />
           )}
         </div>
 
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">
-            Home-made · {product.categoryName}
+            {product.categoryName}
           </p>
           <h1 className="font-heading text-2xl font-semibold">{product.name}</h1>
           {product.teluguName && (
             <p className="text-muted-foreground">{product.teluguName}</p>
           )}
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Badge variant={product.isVeg ? "secondary" : "destructive"}>
-              {product.isVeg ? "Veg" : "Non-veg"}
-            </Badge>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <VegIndicator isVeg={product.isVeg} />
             {product.spiceLevel && <Badge variant="outline">{product.spiceLevel}</Badge>}
             {product.shelfLife && (
               <Badge variant="outline">Shelf life: {product.shelfLife}</Badge>

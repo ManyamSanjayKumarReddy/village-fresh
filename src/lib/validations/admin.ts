@@ -45,6 +45,12 @@ export const updateProductSchema = z.object({
   images: z.array(z.string().url()).max(5).optional(),
 });
 
+export const createVariantSchema = z.object({
+  label: z.string().trim().min(1).max(50),
+  pricePaise: z.coerce.number().int().positive(),
+  stockQty: z.coerce.number().int().min(0),
+});
+
 export const updateVariantSchema = z.object({
   pricePaise: z.coerce.number().int().positive().optional(),
   stockQty: z.coerce.number().int().min(0).optional(),

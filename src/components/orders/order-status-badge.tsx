@@ -1,29 +1,27 @@
-import { Badge } from "@/components/ui/badge";
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  packed: "Packed",
-  shipped: "Shipped",
-  out_for_delivery: "Out for delivery",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
-const STATUS_VARIANTS: Record<string, "secondary" | "default" | "destructive" | "outline"> = {
-  pending: "outline",
-  confirmed: "default",
-  packed: "default",
-  shipped: "default",
-  out_for_delivery: "default",
-  delivered: "secondary",
-  cancelled: "destructive",
-};
+import { cn } from "@/lib/utils";
+import { ORDER_STATUS_META, type OrderStatus } from "@/lib/order-status";
 
 export function OrderStatusBadge({ status }: { status: string }) {
+  const meta = ORDER_STATUS_META[status as OrderStatus];
+  if (!meta) {
+    return (
+      <span className="rounded-full border px-2.5 py-1 text-xs font-medium capitalize">
+        {status}
+      </span>
+    );
+  }
+
+  const Icon = meta.icon;
+
   return (
-    <Badge variant={STATUS_VARIANTS[status] ?? "outline"}>
-      {STATUS_LABELS[status] ?? status}
-    </Badge>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+        meta.badge,
+      )}
+    >
+      <Icon className="size-3.5" />
+      {meta.label}
+    </span>
   );
 }
