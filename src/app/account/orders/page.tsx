@@ -3,7 +3,6 @@ import { desc, eq } from "drizzle-orm";
 import { ChevronRight } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
-import { OrderProgressBar } from "@/components/orders/order-progress-bar";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
@@ -64,9 +63,6 @@ export default async function OrdersPage() {
                       <OrderStatusBadge status={order.status} />
                       <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                     </div>
-                  </div>
-                  <div className="px-4 pb-4">
-                    <OrderProgressBar status={order.status} />
                   </div>
                 </Link>
               );
